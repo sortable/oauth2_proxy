@@ -1,3 +1,10 @@
+Sortable fork of oauth2_proxy
+=============================
+
+Rationale: `go get` takes `master`, which is a moving target.
+For repeatability, we keep this fork fixed at a particular version,
+only pulling from upstream when we want to upgrade.
+
 oauth2_proxy
 =================
 

@@ -481,8 +481,10 @@ func (p *OAuthProxy) OAuthCallback(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	// set cookie, or deny
-	if p.Validator(session.Email) && p.provider.ValidateGroup(session.Email) {
+	groups, groupsok := p.provider.ValidateGroup(session.Email)
+	if p.Validator(session.Email) && groupsok {
 		log.Printf("%s authentication complete %s", remoteAddr, session)
+		session.Groups = groups
 		err := p.SaveSession(rw, req, session)
 		if err != nil {
 			log.Printf("%s %s", remoteAddr, err)

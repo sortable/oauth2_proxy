@@ -107,19 +107,30 @@ func TestGoogleProviderGetEmailAddress(t *testing.T) {
 
 func TestGoogleProviderValidateGroup(t *testing.T) {
 	p := newGoogleProvider()
-	p.GroupValidator = func(email string) bool {
-		return email == "michael.bland@gsa.gov"
+	p.GroupValidator = func(email string) ([]string, bool) {
+		if email == "michael.bland@gsa.gov" {
+			return []string{"group"}, true
+		} else {
+			return nil, false
+		}
 	}
-	assert.Equal(t, true, p.ValidateGroup("michael.bland@gsa.gov"))
-	p.GroupValidator = func(email string) bool {
-		return email != "michael.bland@gsa.gov"
+	_, ok := p.ValidateGroup("michael.bland@gsa.gov")
+	assert.Equal(t, true, ok)
+	p.GroupValidator = func(email string) ([]string, bool) {
+		if email == "michael.bland@gsa.gov" {
+			return nil, false
+		} else {
+			return []string{"group"}, true
+		}
 	}
-	assert.Equal(t, false, p.ValidateGroup("michael.bland@gsa.gov"))
+	_, ok = p.ValidateGroup("michael.bland@gsa.gov")
+	assert.Equal(t, false, ok)
 }
 
 func TestGoogleProviderWithoutValidateGroup(t *testing.T) {
 	p := newGoogleProvider()
-	assert.Equal(t, true, p.ValidateGroup("michael.bland@gsa.gov"))
+	_, ok := p.ValidateGroup("michael.bland@gsa.gov")
+	assert.Equal(t, true, ok)
 }
 
 //

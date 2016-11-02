@@ -28,6 +28,7 @@ var SignatureHeaders []string = []string{
 	"Date",
 	"Authorization",
 	"X-Forwarded-User",
+	"X-Forwarded-Groups",
 	"X-Forwarded-Email",
 	"X-Forwarded-Access-Token",
 	"Cookie",
@@ -591,6 +592,9 @@ func (p *OAuthProxy) Authenticate(rw http.ResponseWriter, req *http.Request) int
 	if p.PassBasicAuth {
 		req.SetBasicAuth(session.User, p.BasicAuthPassword)
 		req.Header["X-Forwarded-User"] = []string{session.User}
+		if session.Groups != nil {
+			req.Header["X-Forwarded-Groups"] = []string{strings.Join(session.Groups, "|")}
+		}
 		if session.Email != "" {
 			req.Header["X-Forwarded-Email"] = []string{session.Email}
 		}

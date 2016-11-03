@@ -8,7 +8,7 @@ type Provider interface {
 	Data() *ProviderData
 	GetEmailAddress(*SessionState) (string, error)
 	Redeem(string, string) (*SessionState, error)
-	ValidateGroup(string) bool
+	ValidateGroup(string) ([]string, bool)
 	ValidateSessionState(*SessionState) bool
 	GetLoginURL(redirectURI, finalRedirect string) string
 	RefreshSessionIfNeeded(*SessionState) (bool, error)

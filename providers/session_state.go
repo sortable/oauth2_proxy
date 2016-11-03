@@ -95,7 +95,7 @@ func DecodeSessionState(v string, c *cookie.Cipher) (s *SessionState, err error)
 	}
 
 	if len(chunks) != 5 {
-		err = fmt.Errorf("invalid number of fields (got %d expected 4)", len(chunks))
+		err = fmt.Errorf("invalid number of fields (got %d expected 5)", len(chunks))
 		return
 	}
 

@@ -186,7 +186,7 @@ Usage of oauth2_proxy:
   -https-address=":443": <addr>:<port> to listen on for HTTPS clients
   -login-url="": Authentication endpoint
   -pass-access-token=false: pass OAuth access_token to upstream via X-Forwarded-Access-Token header
-  -pass-basic-auth=true: pass HTTP Basic Auth, X-Forwarded-User, X-Forwarded-Groups and X-Forwarded-Email information to upstream
+  -pass-basic-auth=true: pass HTTP Basic Auth, X-Forwarded-User and X-Forwarded-Email information to upstream
   -pass-host-header=true: pass the request Host Header to upstream
   -profile-url="": Profile access endpoint
   -provider="google": OAuth provider

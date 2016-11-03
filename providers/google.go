@@ -23,8 +23,8 @@ type GoogleProvider struct {
 	*ProviderData
 	RedeemRefreshURL *url.URL
 	// GroupValidator is a function that determines if the passed email is in
-	// the configured Google groups, and returns the groups it's in.
-	GroupValidator func(string) ([]string, bool)
+	// the configured Google group.
+	GroupValidator func(string) bool
 }
 
 func NewGoogleProvider(p *ProviderData) *GoogleProvider {
@@ -55,8 +55,8 @@ func NewGoogleProvider(p *ProviderData) *GoogleProvider {
 		ProviderData: p,
 		// Set a default GroupValidator to just always return valid (true), it will
 		// be overwritten if we configured a Google group restriction.
-		GroupValidator: func(email string) ([]string, bool) {
-			return nil, true
+		GroupValidator: func(email string) bool {
+			return true
 		},
 	}
 }
@@ -161,15 +161,8 @@ func (p *GoogleProvider) Redeem(redirectURL, code string) (s *SessionState, err 
 // account credentials.
 func (p *GoogleProvider) SetGroupRestriction(groups []string, adminEmail string, credentialsReader io.Reader) {
 	adminService := getAdminService(adminEmail, credentialsReader)
-	p.GroupValidator = func(email string) ([]string, bool) {
-		if len(groups) == 0 {
-			return nil, true
-		}
-		ingroups, err := userInGroup(adminService, groups, email)
-		if err != nil {
-			return nil, false
-		}
-		return ingroups, len(ingroups) > 0
+	p.GroupValidator = func(email string) bool {
+		return userInGroup(adminService, groups, email)
 	}
 }
 
@@ -192,37 +185,36 @@ func getAdminService(adminEmail string, credentialsReader io.Reader) *admin.Serv
 	return adminService
 }
 
-func userInGroup(service *admin.Service, groups []string, email string) ([]string, error) {
+func userInGroup(service *admin.Service, groups []string, email string) bool {
 	user, err := fetchUser(service, email)
 	if err != nil {
 		log.Printf("error fetching user: %v", err)
-		return nil, err
+		return false
 	}
 	id := user.Id
 	custID := user.CustomerId
 
-	ingroups := make([]string, 0)
 	for _, group := range groups {
 		members, err := fetchGroupMembers(service, group)
 		if err != nil {
 			log.Printf("error fetching group members: %v", err)
-			return nil, err
+			return false
 		}
 
 		for _, member := range members {
 			switch member.Type {
 			case "CUSTOMER":
 				if member.Id == custID {
-					ingroups = append(ingroups, group)
+					return true
 				}
 			case "USER":
 				if member.Id == id {
-					ingroups = append(ingroups, group)
+					return true
 				}
 			}
 		}
 	}
-	return ingroups, nil
+	return false
 }
 
 func fetchUser(service *admin.Service, email string) (*admin.User, error) {
@@ -255,7 +247,7 @@ func fetchGroupMembers(service *admin.Service, group string) ([]*admin.Member, e
 
 // ValidateGroup validates that the provided email exists in the configured Google
 // group(s).
-func (p *GoogleProvider) ValidateGroup(email string) ([]string, bool) {
+func (p *GoogleProvider) ValidateGroup(email string) bool {
 	return p.GroupValidator(email)
 }
 
@@ -270,11 +262,9 @@ func (p *GoogleProvider) RefreshSessionIfNeeded(s *SessionState) (bool, error) {
 	}
 
 	// re-check that the user is in the proper google group(s)
-	groups, ok := p.ValidateGroup(s.Email)
-	if !ok {
+	if !p.ValidateGroup(s.Email) {
 		return false, fmt.Errorf("%s is no longer in the group(s)", s.Email)
 	}
-	s.Groups = groups
 
 	origExpiration := s.ExpiresOn
 	s.AccessToken = newToken

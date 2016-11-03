@@ -110,9 +110,9 @@ func (p *ProviderData) GetEmailAddress(s *SessionState) (string, error) {
 }
 
 // ValidateGroup validates that the provided email exists in the configured provider
-// email group(s).
-func (p *ProviderData) ValidateGroup(email string) bool {
-	return true
+// email group(s) (the bool), and lists the (relevant) groups it's in.
+func (p *ProviderData) ValidateGroup(email string) ([]string, bool) {
+	return nil, true
 }
 
 func (p *ProviderData) ValidateSessionState(s *SessionState) bool {

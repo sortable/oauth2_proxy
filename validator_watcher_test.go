@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 )
 
 func (vt *ValidatorTest) UpdateEmailFile(t *testing.T, emails []string) {
@@ -37,6 +38,7 @@ func (vt *ValidatorTest) UpdateEmailFileViaRenameAndReplace(
 			err.Error())
 	}
 	vt.auth_email_file = orig_file
+	time.Sleep(1000 * time.Millisecond)
 	os.Remove(moved_name)
 }
 

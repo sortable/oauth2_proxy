@@ -206,7 +206,7 @@ func userInGroup(service *admin.Service, groups []string, email string) ([]strin
 		members, err := fetchGroupMembers(service, group)
 		if err != nil {
 			log.Printf("error fetching members of group %#v: %v", group, err)
-			return nil, err
+			continue
 		}
 
 		for _, member := range members {

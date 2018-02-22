@@ -407,6 +407,15 @@ func getRemoteAddr(req *http.Request) (s string) {
 }
 
 func (p *OAuthProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	domain := req.Host
+	if h, _, err := net.SplitHostPort(domain); err == nil {
+		domain = h
+	}
+	if domain != p.CookieDomain {
+		// reject request, to avoid lots of API requests; see RR-1635
+		p.ErrorPage(rw, 400, "Wrong Host", fmt.Sprintf("request is for host %q but this oauth proxy is configured for %q", domain, p.CookieDomain))
+		return
+	}
 	switch path := req.URL.Path; {
 	case path == p.RobotsPath:
 		p.RobotsTxt(rw)

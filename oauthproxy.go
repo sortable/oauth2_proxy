@@ -39,6 +39,7 @@ type OAuthProxy struct {
 	CookieSeed     string
 	CookieName     string
 	CookieDomain   string
+	DotCookieDomain   string
 	CookieSecure   bool
 	CookieHttpOnly bool
 	CookieExpire   time.Duration
@@ -174,6 +175,7 @@ func NewOAuthProxy(opts *Options, validator func(string) bool) *OAuthProxy {
 		CookieName:     opts.CookieName,
 		CookieSeed:     opts.CookieSecret,
 		CookieDomain:   opts.CookieDomain,
+		DotCookieDomain:   "." + opts.CookieDomain,
 		CookieSecure:   opts.CookieSecure,
 		CookieHttpOnly: opts.CookieHttpOnly,
 		CookieExpire:   opts.CookieExpire,
@@ -406,12 +408,16 @@ func getRemoteAddr(req *http.Request) (s string) {
 	return
 }
 
+func (p *OAuthProxy) GoodDomain(domain string) bool {
+	return domain == p.CookieDomain || strings.HasSuffix(domain, p.DotCookieDomain)
+}
+
 func (p *OAuthProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	domain := req.Host
 	if h, _, err := net.SplitHostPort(domain); err == nil {
 		domain = h
 	}
-	if domain != p.CookieDomain {
+	if !p.GoodDomain(domain) {
 		// reject request, to avoid lots of API requests; see RR-1635
 		p.ErrorPage(rw, 400, "Wrong Host", fmt.Sprintf("request is for host %q but this oauth proxy is configured for %q", domain, p.CookieDomain))
 		return

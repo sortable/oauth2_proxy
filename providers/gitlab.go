@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/sortable/oauth2_proxy/api"
+	"github.com/bitly/oauth2_proxy/api"
 )
 
 type GitLabProvider struct {
@@ -32,11 +32,11 @@ func NewGitLabProvider(p *ProviderData) *GitLabProvider {
 		p.ValidateURL = &url.URL{
 			Scheme: "https",
 			Host:   "gitlab.com",
-			Path:   "/api/v3/user",
+			Path:   "/api/v4/user",
 		}
 	}
 	if p.Scope == "" {
-		p.Scope = "api"
+		p.Scope = "read_user"
 	}
 	return &GitLabProvider{ProviderData: p}
 }

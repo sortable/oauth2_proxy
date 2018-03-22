@@ -1,12 +1,13 @@
 package providers
 
 import (
-	"github.com/sortable/oauth2_proxy/cookie"
+	"github.com/bitly/oauth2_proxy/cookie"
 )
 
 type Provider interface {
 	Data() *ProviderData
 	GetEmailAddress(*SessionState) (string, error)
+	GetUserName(*SessionState) (string, error)
 	Redeem(string, string) (*SessionState, error)
 	ValidateGroup(string) ([]string, bool)
 	ValidateSessionState(*SessionState) bool
@@ -18,16 +19,18 @@ type Provider interface {
 
 func New(provider string, p *ProviderData) Provider {
 	switch provider {
-	case "myusa":
-		return NewMyUsaProvider(p)
 	case "linkedin":
 		return NewLinkedInProvider(p)
+	case "facebook":
+		return NewFacebookProvider(p)
 	case "github":
 		return NewGitHubProvider(p)
 	case "azure":
 		return NewAzureProvider(p)
 	case "gitlab":
 		return NewGitLabProvider(p)
+	case "oidc":
+		return NewOIDCProvider(p)
 	default:
 		return NewGoogleProvider(p)
 	}

@@ -5,6 +5,26 @@ Rationale: `go get` takes `master`, which is a moving target.
 For repeatability, we keep this fork fixed at a particular version,
 only pulling from upstream when we want to upgrade.
 
+To pull updates from upstream and build a statically linked binary:
+
+```
+$ go get github.com/bitly/oauth2_proxy
+...this builds and installs it in your Go src directory...
+$ cd ~/go/src/github.com/bitly/oauth2_proxy
+$ git remote add sortable git@github.com:sortable/oauth2_proxy.git
+
+# NOTE: these shenanigans of having bitly in the path, but using our remote
+# permits us to build without having to update internal package references
+# to point at sortable instead of bitly.
+
+$ git checkout sortable/master
+$ git merge origin/master
+$ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags="-s -w" -o oauth2_proxy
+```
+
+Put the updated binary in `s3://sortable-build/arch/x86_64/`, with appropriate version information appended.
+Then update the `config_oauth2_proxy` fab task.
+
 oauth2_proxy
 =================
 

@@ -5,20 +5,30 @@ Rationale: `go get` takes `master`, which is a moving target.
 For repeatability, we keep this fork fixed at a particular version,
 only pulling from upstream when we want to upgrade.
 
-To pull updates from upstream and build a statically linked binary:
+## Checking out this project
 
 ```
 $ go get github.com/bitly/oauth2_proxy
 ...this builds and installs it in your Go src directory...
 $ cd ~/go/src/github.com/bitly/oauth2_proxy
 $ git remote add sortable git@github.com:sortable/oauth2_proxy.git
-
-# NOTE: these shenanigans of having bitly in the path, but using our remote
-# permits us to build without having to update internal package references
-# to point at sortable instead of bitly.
-
 $ git checkout sortable/master
+```
+
+Note that we want to do the initial checkout such that `bitly` is the package
+name. This saves us from having to rename internal package references.
+
+## Merging changes from upstream
+
+```
+$ git fetch origin
 $ git merge origin/master
+...resolve some conflicts!
+```
+
+## Building a binary
+
+```
 $ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags="-s -w" -o oauth2_proxy
 ```
 
